@@ -18,7 +18,6 @@ def leastSquares(X, Y, degree):
     """
     if degree < 1:
         raise ValueError("Polynomial degree must be greater than or equal to 1.")
-    X_poly = X.copy()
     X_poly = np.ones((X.shape[0], 1))
     for d in range(1, degree + 1):
         X_poly = np.c_[X_poly, X**d]
