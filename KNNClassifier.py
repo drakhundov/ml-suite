@@ -2,7 +2,7 @@ import numpy as np
 from collections import Counter
 
 
-class KNN_Classifier:
+class KNNClassifier:
     def __init__(self, k: int=3):
         self.k = k
         self.X_train = None
