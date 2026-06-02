@@ -5,12 +5,12 @@ from collections import Counter
 class KNN_Classifier:
     def __init__(self, k: int=3):
         self.k = k
-        self.x_train = None
+        self.X_train = None
         self.y_train = None
 
     def fit(self, X: np.ndarray, y: np.ndarray):
         """Lazy learner."""
-        self.x_train = np.array(X)
+        self.X_train = np.array(X)
         self.y_train = np.array(y)
     
     def predict(self, X_new: np.ndarray):
