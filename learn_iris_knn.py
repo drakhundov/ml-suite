@@ -1,6 +1,6 @@
 from sklearn.datasets import load_iris
 
-from classifier import KNN_Classifier
+from KNN_Classifier import KNN_Classifier
 
 # Load sample data
 iris = load_iris()
