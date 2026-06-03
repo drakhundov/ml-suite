@@ -74,7 +74,11 @@ class IrisLearner:
             self.y_train, self.y_test = y[: self.n_train], y[self.n_train :]
 
     def fit_and_get_stats(self) -> List[LearnStats]:
-        self.clf.fit(self.X_train, self.y_train)
+        if isinstance(self.clf, KNNClassifier):
+            data = (self.X_train, self.y_train,)
+        else:
+            data = (self.X_train,)
+        self.clf.fit(*data)
         test_pred = np.array(self.clf.predict(self.X_test))
         stats = []
         for i in range(3):
