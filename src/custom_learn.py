@@ -40,38 +40,54 @@ def produce_pred_stats(preds: Union[List, np.ndarray], y_true, _class: int = 0):
     tn = np.sum((preds != _class) & (y_true != _class))
     fp = np.sum((preds == _class) & (y_true != _class))
     fn = np.sum((preds != _class) & (y_true == _class))
+    if (div := (tp + tn + fp + fn)) == 0:
+        acc = 0
+    else:
+        acc = (tp + tn) / div
+    if (div := (tp + fn)) == 0:
+        rec = 0
+    else:
+        rec = tp / div
+    if (div := (tp + fp)) == 0:
+        prec = 0
+    else:
+        prec = tp / div
+    if (div := (tp + fp + fn)) == 0:
+        f1 = 0
+    else:
+        f1 = 2 * tp / div
     return LearnStats(
         TP=tp,
         TN=tn,
         FP=fp,
         FN=fn,
-        accuracy=(tp + tn) / (tp + tn + fp + fn),
-        recall=tp / (tp + fn),
-        precision=tp / (tp + fp),
-        F1=2 * tp / (tp + fp + fn),
+        accuracy=acc,
+        recall=rec,
+        precision=prec,
+        F1=f1,
     )
 
 
 class IrisLearner:
     def __init__(
-        self,
-        clf: Union[KNNClassifier, KMCClassifier],
-        test_sz: float = 0.2,
-        split_by_sk: bool = False,
+            self,
+            clf: Union[KNNClassifier, KMCClassifier],
+            test_sz: float = 0.2,
+            split_by_sk: bool = False,
     ):
         self.clf = clf
         self.split_by_sk = split_by_sk
         iris = load_iris()
         X, y = iris.data, iris.target
         self.dataset_sz = X.shape[0]
-        self.n_train = (1 - test_sz) * self.dataset_sz
+        self.n_train = int((1 - test_sz) * self.dataset_sz)
         if self.split_by_sk:
             self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
                 X, y, test_size=test_sz, random_state=42, stratify=y
             )
         else:
-            self.X_train, self.X_test = X[: self.n_train], X[self.n_train :]
-            self.y_train, self.y_test = y[: self.n_train], y[self.n_train :]
+            self.X_train, self.X_test = X[: self.n_train], X[self.n_train:]
+            self.y_train, self.y_test = y[: self.n_train], y[self.n_train:]
 
     def fit_and_get_stats(self) -> List[LearnStats]:
         if isinstance(self.clf, KNNClassifier):
