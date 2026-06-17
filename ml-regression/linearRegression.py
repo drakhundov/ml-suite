@@ -1,0 +1,62 @@
+import numpy as np
+
+
+def leastSquares(X, Y):
+    """
+    Input:
+    X and Y are two-dim numpy arrays.
+    X dims: (N of samples, feature dims)
+    Y dim: (N of samples, response dims)
+
+    Output:
+    Weight (Coefficient) vector
+    """
+    X_b = np.c_[np.ones((X.shape[0], 1)), X]
+    w = np.linalg.inv(X_b.T @ X_b) @ X_b.T @ Y
+    return w
+
+
+class gradientDescent:
+    def __init__(self, x, y, w, lr, num_iters):
+        self.x = np.c_[np.ones((x.shape[0], 1)), x]
+        self.y = y
+        self.lr = lr
+        self.num_iters = num_iters
+        self.epsilon = 1e-4
+        self.w = w.copy()
+        self.weight_history = [self.w]
+        self.cost_history = [
+            np.sum(np.square(self.predict(self.x) - self.y)) / self.x.shape[0]
+        ]
+
+    def gradient(self):
+        y_pred = self.predict(self.x)
+        gradient = (2 / self.x.shape[0]) * self.x.T @ (y_pred - self.y)
+        return gradient
+
+    def fit(self, lr=None, n_iterations=None):
+        k = 0
+        if n_iterations is None:
+            n_iterations = self.num_iters
+        if lr != None:
+            self.lr = lr
+
+        for k in range(n_iterations):
+            grad = self.gradient()
+            if self.lr == "diminishing":
+                self.lr = 1 / (k + 1)
+            self.w -= self.lr * grad
+            self.weight_history.append(self.w.copy())
+            cost = np.sum(np.square(self.predict(self.x) - self.y)) / self.x.shape[0]
+            self.cost_history.append(cost)
+            if (
+                k > 0
+                and abs(self.cost_history[-2] - self.cost_history[-1]) < self.epsilon
+            ):
+                break
+        return self.w, k
+
+    def predict(self, x):
+        y_pred = np.zeros_like(self.y)
+        y_pred = x.dot(self.w)
+        return y_pred
