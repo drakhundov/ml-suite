@@ -16,11 +16,12 @@ class KNNClassifier:
     def predict(self, X_new: np.ndarray):
         # X_new -> column vector
         # self.x_train -> feature matrix
-        dists = np.sum(X_new**2, axis=1)[:, np.newaxis] + np.sum(self.X_train**2, axis=1) - 2 * np.dot(X_new, self.X_train.T)
-        distances = np.sqrt(np.maximum(dists, 0))
+        dist2 = np.sum(X_new**2, axis=1)[:, np.newaxis] + np.sum(self.X_train**2, axis=1) - 2 * np.dot(X_new, self.X_train.T)
+        #* No need to take the square root.
+        # distances = np.sqrt(np.maximum(dists, 0))
 
         predictions = []
-        for row in distances:
+        for row in dist2:
             k_indices = np.argsort(row)[:self.k]
             
             k_labels = self.y_train[k_indices]
