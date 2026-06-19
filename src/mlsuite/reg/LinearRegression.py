@@ -28,6 +28,11 @@ class GDSolver:
         """
         N, D = X_train.shape
 
+        y_train = np.asarray(y_train)
+        if y_train.ndim == 1:
+            y_train = y_train.reshape(-1, 1)
+        elif y_train.ndim == 2 and y_train.shape[1] != 1:
+            raise ValueError(f"y_train must be (N,1); got {y_train.shape}")
         if y_train.shape[0] != N:
             raise ValueError("Number of labels doesn't match number of data points")
 
@@ -41,7 +46,7 @@ class GDSolver:
             self.W = np.zeros((D, 1))
 
         prev_cost = float("inf")
-        for iterno in range(self.hp.num_iters):
+        for iterno in range(self.hp.niters):
             grad = self._calc_gradient(X_train, y_train)
             l2_reg = 0
             if self.hp.l2_coef != 0.0:
@@ -76,14 +81,14 @@ class LSSolver:
         Returns resulting weights.
         """
         # Add bias column if bias is toggled on.
-        if self.hp.bias:
+        if self.hp.use_bias:
             X = np.c_[np.ones((X_train.shape[0], 1)), X_train]
         else:
             X = X_train
         A = np.dot(X.T, X)
         if self.hp.l2_coef != 0.0:
             I_reg = np.eye(X.shape[1])
-            if self.hp.bias:
+            if self.hp.use_bias:
                 # Don't penalyze bias.
                 I_reg[0, 0] = 0.0
             A += self.hp.l2_coef * I_reg
@@ -127,7 +132,7 @@ class LinearRegression:
         self.X_train = X_train
         self.y_train = y_train
         self.W = self.solver.fit(X_train, y_train)
-        if self.hp.bias:
+        if self.hp.use_bias:
             self.bias = (
                 self.W[0].item() if isinstance(self.W, np.ndarray) else self.W[0]
             )
