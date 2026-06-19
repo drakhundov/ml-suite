@@ -8,6 +8,7 @@ class GDConfig:
     lr: float
     diminishing_lr: bool = False  # lr=1/(k+1)
     l2_coef: float = 0
+    use_bias: bool = False
     niters: int = 1000
     stochastic: bool = False
     epsilon: float | None = None
@@ -26,7 +27,7 @@ class LSConfig:
     """Hyperparameters for Linear Regression with Direct Optimization (Least Squares)"""
 
     l2_coef: float = 0
-    bias: bool
+    use_bias: bool = False
 
     def __post_init__(self):
         if self.l2_coef < 0.0:
