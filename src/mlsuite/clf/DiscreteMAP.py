@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class DiscreteMaximumAPosteriori:
+class DiscreteMAP:
     def __init__(self):
         self.classes = None
         self.P_y = None
