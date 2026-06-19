@@ -1,4 +1,4 @@
-from mlsuite.reg import LinearRegression
+from mlsuite.reg import Regression
 from mlsuite.clf import (
     KNNClassifier,
     KMCClassifier,
@@ -7,6 +7,6 @@ from mlsuite.clf import (
 )
 
 models_map = {
-    "reg": [LinearRegression],
+    "reg": [Regression],
     "clf": [KNNClassifier, KMCClassifier, DiscreteMAP, MultiClassLogisticRegression],
 }

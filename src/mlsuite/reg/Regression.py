@@ -1,15 +1,11 @@
-from enum import Enum
+from itertools import combinations_with_replacement
 
 import numpy as np
 
-from mlsuite.reg import GDConfig, LSConfig
+from mlsuite.protocol import FloatArrayT
+from .Conf import GDConfig, LSConfig, OptimizationMethod
 
 # TODO: implement stochastic gradient descent
-
-
-class OptimizationMethod(Enum):
-    GRAD = 1  # Gradient Descent
-    LSQR = 2  # Least Squares
 
 
 class GDSolver:
@@ -18,10 +14,10 @@ class GDSolver:
 
     def fit(
         self,
-        X_train: np.ndarray,
-        y_train: np.ndarray,
-        W_start: np.ndarray | None = None,
-    ) -> np.ndarray:
+        X_train: FloatArrayT,
+        y_train: FloatArrayT,
+        W_start: FloatArrayT | None = None,
+    ) -> FloatArrayT:
         """
         Solves linear regression using Gradient Descent with given hyperparameters.
         Returns resulting weights.
@@ -66,7 +62,7 @@ class GDSolver:
                     prev_cost = cost
         return self.W
 
-    def _calc_gradient(self, X: np.ndarray, y: np.ndarray):
+    def _calc_gradient(self, X: FloatArrayT, y: FloatArrayT):
         y_pred = X @ self.W
         return (2 / X.shape[0]) * (X.T @ (y_pred - y))
 
@@ -75,28 +71,23 @@ class LSSolver:
     def __init__(self, conf: LSConfig):
         self.hp = conf  # Hyperparameters.
 
-    def fit(self, X_train: np.ndarray, y_train: np.ndarray) -> np.ndarray:
+    def fit(self, X_train: FloatArrayT, y_train: FloatArrayT) -> FloatArrayT:
         """
         Solves linear regression using Least Squares with given hyperparameters.
         Returns resulting weights.
         """
-        # Add bias column if bias is toggled on.
-        if self.hp.use_bias:
-            X = np.c_[np.ones((X_train.shape[0], 1)), X_train]
-        else:
-            X = X_train
-        A = np.dot(X.T, X)
+        A = np.dot(X_train.T, X_train)
         if self.hp.l2_coef != 0.0:
-            I_reg = np.eye(X.shape[1])
+            I_reg = np.eye(X_train.shape[1])
             if self.hp.use_bias:
                 # Don't penalyze bias.
                 I_reg[0, 0] = 0.0
             A += self.hp.l2_coef * I_reg
-        W = np.linalg.inv(A) @ X.T @ y_train
+        W = np.linalg.inv(A) @ X_train.T @ y_train
         return W
 
 
-class LinearRegression:
+class Regression:
     def __init__(
         self,
         optim_method: OptimizationMethod,
@@ -120,7 +111,7 @@ class LinearRegression:
         self.bias = None
         self.coef = None
 
-    def fit(self, X_train: np.ndarray, y_train: np.ndarray):
+    def fit(self, X_train: FloatArrayT, y_train: FloatArrayT):
         """
         shape(X_train) = (# of data points, # of features)
         shape(y_train) = (# of data points, 1)
@@ -131,19 +122,41 @@ class LinearRegression:
         # Training data is saved for reference.
         self.X_train = X_train
         self.y_train = y_train
-        self.W = self.solver.fit(X_train, y_train)
+        self.W = self.solver.fit(self._design_matrix(X_train), y_train)
         if self.hp.use_bias:
             self.bias = (
-                self.W[0].item() if isinstance(self.W, np.ndarray) else self.W[0]
+                self.W[0].item() if isinstance(self.W, FloatArrayT) else self.W[0]
             )
             self.coef = self.W[1:]
         else:
             self.bias = None
             self.coef = None
 
-    def predict(self, X_new: np.ndarray) -> np.ndarray:
+    def predict(self, X_new: FloatArrayT) -> FloatArrayT:
         if self.W is None:
             raise ValueError("Must first train the model before predicting")
         elif len(X_new) == 0:
             raise ValueError("Must provide data for prediction")
+        X_new = self._design_matrix(X_new)
         return X_new.dot(self.W)
+
+    def _design_matrix(self, X: FloatArrayT) -> FloatArrayT:
+        """Designs training matrix based on configuration (bias, polynomial)."""
+        X = np.asarray(X)
+        if X.ndim != 2:
+            raise ValueError(f"X must be 2D (N,D), got {X.shape}")
+        N, D = X.shape
+        columns = []
+
+        # Add bias column.
+        if self.hp.use_bias:
+            columns.append(np.ones((N, 1)))
+
+        for deg in range(1, self.hp.degree + 1):
+            # combinations_with_replacement(range(D), 3) yields (0,0,0), (0,0,1), (0,1,2), etc.
+            for combos in combinations_with_replacement(range(D), deg):
+                # Take the product along the columns for the chosen indices.
+                new_col = np.prod(X[:, combos], axis=1, keepdims=True)
+                columns.append(new_col)
+
+        return np.hstack(columns)
