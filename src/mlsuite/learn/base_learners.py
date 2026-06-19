@@ -4,6 +4,8 @@ from typing import Union, Tuple, Generic
 from sklearn.model_selection import train_test_split
 
 from mlsuite.protocol import SupModelT, FloatArrayT
+from mlsuite.registry import models_map
+from .TestStats import TestStats, produce_test_stats_reg, produce_test_stats_clf
 
 
 class SupervisedBaseLearner(ABC, Generic[SupModelT]):
@@ -35,3 +37,13 @@ class SupervisedBaseLearner(ABC, Generic[SupModelT]):
         n = X.shape[0]
         n_train = int((1 - self.test_sz) * n)
         return X[:n_train], X[n_train:], y[:n_train], y[n_train:]
+
+    def fit(self):
+        self.model.fit(self.X_train, self.y_train)
+
+    def test(self) -> TestStats:
+        pred = self.model.predict(self.X_test)
+        if self.model.__class__ in models_map["reg"]:
+            return produce_test_stats_reg(pred, self.y_test)
+        else:
+            return produce_test_stats_clf(pred, self.y_test)
