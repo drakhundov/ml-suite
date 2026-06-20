@@ -26,13 +26,13 @@ class DiscreteMAP:
         # Assign P(x | y) for all features.
         self.P_xy = np.zeros((self.nfeat, self.nclasses))
         for i, c in enumerate(classes):
-            # Take data points that belong to class 'c'.
-            X_c = X_train[y_train == c]
-            feat_tot = np.sum(X_c[:, fno])
-            tot = np.sum(X_c)
-            if feat_tot == 0 or tot == 0:
-                self.P_xy[fno][i] = 0.0001
             for fno in range(self.nfeat):
+                # Take data points that belong to class 'c'.
+                X_c = X_train[y_train == c]
+                feat_tot = np.sum(X_c[:, fno])
+                tot = np.sum(X_c)
+                if feat_tot == 0 or tot == 0:
+                    self.P_xy[fno][i] = 0.0001
                 # Add 0.0001 to avoid log(0.0)
                 self.P_xy[fno][i] = feat_tot / tot
         self.P_xy_log = np.log(self.P_xy)
