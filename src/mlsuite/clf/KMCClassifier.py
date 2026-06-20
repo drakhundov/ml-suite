@@ -49,8 +49,8 @@ class KMCClassifier:
     def predict(self, X: FloatArrayT) -> FloatArrayT:
         X = np.array(X)
         dists = (
-            np.sum(X**2, axis=1)[:, np.newaxis]
-            + np.sum(self.centroids**2, axis=1)
-            - 2 * np.dot(X, self.centroids.T)
+            np.sum(X**2, axis=1)[:, np.newaxis]     # (N, 1)
+            + np.sum(self.centroids**2, axis=1)     # (k, 1)
+            - 2 * np.dot(X, self.centroids.T)       # (N, k)
         )
         return np.argmin(dists, axis=1)
