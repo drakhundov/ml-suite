@@ -1,6 +1,8 @@
 import numpy as np
 from collections import Counter
 
+from mlsuite.protocol import FloatArrayT
+
 
 class KNNClassifier:
     def __init__(self, k: int = 3):
@@ -8,12 +10,12 @@ class KNNClassifier:
         self.X_train = None
         self.y_train = None
 
-    def fit(self, X: np.ndarray, y: np.ndarray):
+    def fit(self, X: FloatArrayT, y: FloatArrayT):
         """Lazy learner."""
         self.X_train = np.array(X)
         self.y_train = np.array(y)
 
-    def predict(self, X_new: np.ndarray) -> np.ndarray:
+    def predict(self, X_new: FloatArrayT) -> FloatArrayT:
         # X_new -> column vector
         # self.x_train -> feature matrix
         dist2 = (

@@ -1,5 +1,7 @@
 import numpy as np
 
+from mlsuite.protocol import FloatArrayT
+
 
 class KMCClassifier:
     def __init__(self, k: int = 5, niter: int = 100, threshold: float = 1e-4):
@@ -7,7 +9,7 @@ class KMCClassifier:
         self.niter = niter
         self.threshold = threshold
 
-    def fit(self, X_train: np.ndarray):
+    def fit(self, X_train: FloatArrayT):
         X_train = np.array(X_train)
         n_samples, n_features = X_train.shape
 
@@ -44,11 +46,11 @@ class KMCClassifier:
                 print(f"Converged early at iteration {iteration}")
                 break
 
-    def predict(self, X):
+    def predict(self, X: FloatArrayT) -> FloatArrayT:
         X = np.array(X)
         dists = (
-                np.sum(X ** 2, axis=1)[:, np.newaxis]
-                + np.sum(self.centroids ** 2, axis=1)
-                - 2 * np.dot(X, self.centroids.T)
+            np.sum(X**2, axis=1)[:, np.newaxis]
+            + np.sum(self.centroids**2, axis=1)
+            - 2 * np.dot(X, self.centroids.T)
         )
         return np.argmin(dists, axis=1)
