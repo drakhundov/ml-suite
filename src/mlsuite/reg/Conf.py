@@ -14,6 +14,7 @@ class GDConfig:
     stochastic: bool = False
     epsilon: float | None = None
     degree: int = 1
+    normalize_data: bool = True
 
     def __post_init__(self):
         if self.lr <= 0.0:
@@ -33,6 +34,7 @@ class LSConfig:
     l2_coef: float = 0
     use_bias: bool = False
     degree: int = 1
+    normalize_data: bool = True
 
     def __post_init__(self):
         if self.l2_coef < 0.0:
