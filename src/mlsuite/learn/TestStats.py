@@ -85,4 +85,5 @@ def produce_test_stats_clf(preds: Union[List, np.ndarray], y_true, _class: int =
         recall=rec,
         precision=prec,
         F1=f1,
+        MSE=0.0,
     )
