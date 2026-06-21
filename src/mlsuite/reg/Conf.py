@@ -7,7 +7,8 @@ class GDConfig:
     """Hyperparameters for Linear Regression with Iterative Optimization (Gradient Descent)"""
 
     lr: float
-    diminishing_lr: bool = False  # lr=1/(k+1)
+    diminishing_lr: bool = False
+    lr_dim_coef: float = 0.5 # For diminishing LR: lr = lr*dim_coef^epoch_no
     l2_coef: float = 0
     use_bias: bool = False
     niters: int = 1000

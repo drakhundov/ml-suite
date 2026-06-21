@@ -42,14 +42,14 @@ class GDSolver:
             self.W = np.zeros((D, 1))
 
         prev_cost = float("inf")
+        lr = self.hp.lr
         for iterno in range(self.hp.niters):
             grad = self._calc_gradient(X_train, y_train)
             l2_reg = 0
             if self.hp.l2_coef != 0.0:
                 l2_reg += 2 * self.hp.l2_coef * self.W
-            lr = self.hp.lr
-            if self.hp.diminishing_lr:
-                lr /= iterno + 1
+                if self.hp.use_bias:
+                    l2_reg[0, 0] = 0.0
             self.W -= lr * (grad + l2_reg)
             cost = np.sum(
                 (X_train.dot(self.W) - y_train) ** 2
@@ -60,6 +60,8 @@ class GDSolver:
                     break
                 else:
                     prev_cost = cost
+            if self.hp.diminishing_lr:
+                lr *= self.hp.lr_dim_coef
         return self.W
 
     def _calc_gradient(self, X: FloatArrayT, y: FloatArrayT):
