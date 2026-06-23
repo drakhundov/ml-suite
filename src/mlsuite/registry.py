@@ -3,10 +3,10 @@ from mlsuite.clf import (
     KNNClassifier,
     KMCClassifier,
     DiscreteMAP,
-    MultiClassLogisticRegression,
+    OvALogisticClassification,
 )
 
 models_map = {
     "reg": [Regression],
-    "clf": [KNNClassifier, KMCClassifier, DiscreteMAP, MultiClassLogisticRegression],
+    "clf": [KNNClassifier, KMCClassifier, DiscreteMAP, OvALogisticClassification],
 }
