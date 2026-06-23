@@ -1,17 +1,16 @@
 import numpy as np
 
 from mlsuite.protocol import FloatArrayT
-from mlsuite.reg import GDConfig
+from .Conf import LogisticClfConfig
 
 class OvALogisticRegressionSolver:
-    def __init__(self, conf: GDConfig, num_classes: int):
+    def __init__(self, conf: LogisticClfConfig):
         self.hp = conf
-        self.num_classes = num_classes
 
     def fit(self, X_train: FloatArrayT, y_train: FloatArrayT):
         # ! Assumes class numbers start from 0 and discretely go up.
-        if np.max(y_train) > self.num_classes:
-            raise ValueError(f"OvALogisticRegressionSolver was initialized with a different parameter: self.num_classes={self.num_classes}")
+        if np.max(y_train) > self.hp.num_classes:
+            raise ValueError(f"OvALogisticRegressionSolver was initialized with a different parameter: self.hp.num_classes={self.hp.num_classes}")
         # Since there are weights for each class, we use
         # W = (C, D), where
         #   C - number of classes
@@ -23,10 +22,10 @@ class OvALogisticRegressionSolver:
 
         # Train a separate binary classification model for each class.
         # Put them all into a single matrix for efficiency.
-        self.W = np.random.randn(self.num_classes, D) * 0.01
-        self.B = np.zeros((self.num_classes, 1))
+        self.W = np.random.randn(self.hp.num_classes, D) * 0.01
+        self.B = np.zeros((self.hp.num_classes, 1))
 
-        Y = np.zeros((self.num_classes, N))
+        Y = np.zeros((self.hp.num_classes, N))
         Y[y_train, np.arange(N)] = 1
 
         lr = self.hp.lr
