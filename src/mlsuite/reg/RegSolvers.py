@@ -33,23 +33,28 @@ class GDSolver:
                 raise ValueError(
                     "Initial weights' shape does not match training data shape"
                 )
-            self.W = W_start
+            W = W_start
         else:
-            self.W = np.zeros((D, 1))
+            W = np.zeros((D, 1))
+
+        def _calc_gradient():
+            nonlocal W, X_train, y_train
+            y_pred = X_train @ W
+            return (2 / X_train.shape[0]) * (X_train.T @ (y_pred - y_train))
 
         prev_cost = float("inf")
         lr = self.hp.lr
         for iterno in range(self.hp.niters):
-            grad = self._calc_gradient(X_train, y_train)
+            grad = _calc_gradient()
             l2_reg = 0
             if self.hp.l2_coef != 0.0:
-                l2_reg += 2 * self.hp.l2_coef * self.W
+                l2_reg += 2 * self.hp.l2_coef * W
                 if self.hp.use_bias:
                     l2_reg[0, 0] = 0.0
-            self.W -= lr * (grad + l2_reg)
+            W -= lr * (grad + l2_reg)
             cost = np.sum(
-                (X_train.dot(self.W) - y_train) ** 2
-            ) / N + self.hp.l2_coef * np.sum(self.W**2)
+                (X_train.dot(W) - y_train) ** 2
+            ) / N + self.hp.l2_coef * np.sum(W**2)
             if self.hp.epsilon is not None:
                 # Break once error < epsilon.
                 if iterno > 0 and abs(prev_cost - cost) < self.hp.epsilon:
@@ -58,11 +63,7 @@ class GDSolver:
                     prev_cost = cost
             if self.hp.diminishing_lr:
                 lr *= self.hp.lr_dim_coef
-        return self.W
-
-    def _calc_gradient(self, X: FloatArrayT, y: FloatArrayT):
-        y_pred = X @ self.W
-        return (2 / X.shape[0]) * (X.T @ (y_pred - y))
+        return W
 
 
 class LSSolver:
