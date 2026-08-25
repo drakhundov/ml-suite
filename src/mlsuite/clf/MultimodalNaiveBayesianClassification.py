@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class DiscreteMAP:
+class MultimodalNaiveBayesianClassification:
     def __init__(self):
         self.classes = None
         self.P_y = None
