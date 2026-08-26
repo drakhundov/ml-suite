@@ -49,10 +49,10 @@ class Regression:
             mu = X_poly.mean(axis=0, keepdims=True)
             sigma = X_poly.std(axis=0, keepdims=True) + 1e-8
             if self.hp.use_bias:
-                # Bias column is constant (all ones) — leave it untouched instead
-                # of collapsing it to zero (mean=1, std=0).
-                mu[0, 0] = 0
-                sigma[0, 0] = 1
+                # Leave the bias column (all ones) untouched -- normalizing
+                # it would divide by ~0 and zero it out, killing the intercept.
+                mu[0, 0] = 0.0
+                sigma[0, 0] = 1.0
             X_poly = (X_poly - mu) / sigma
             # Save normalization coefficients to apply to test set.
             self.train_mu = mu
