@@ -17,6 +17,8 @@ class Regression:
         gdconf: GDConfig | None = None,
         lsconf: LSConfig | None = None,
     ):
+        if gdconf is None and lsconf is None:
+            raise ValueError("Must provide configuration via GDConfig or LSConfig")
         self.optim_method = optim_method
         # Set hyperparameters.
         if self.optim_method == OptimizationMethod.GRAD:
@@ -25,13 +27,11 @@ class Regression:
         else:
             self.solver = LSSolver(lsconf)
             self.hp = lsconf
-        if self.hp == None:
-            raise ValueError("Must provide configuration via GDConfig or LSConfig")
         self.X_train = None
         self.y_train = None
         self.W = None
         self.bias = None
-        self.coef = None
+        self.weights = None
 
     def fit(self, X_train: FloatArrayT, y_train: FloatArrayT):
         """
@@ -40,7 +40,7 @@ class Regression:
         shape(W)       = (# of features, 1)
         """
         if X_train.shape[0] != y_train.shape[0]:
-            raise ValueError("X_train and y_train must have same number of columns")
+            raise ValueError("X_train and y_train must have same number of rows (data points)")
         # Training data is saved for reference.
         self.X_train = X_train
         self.y_train = y_train
@@ -54,10 +54,10 @@ class Regression:
         self.W = self.solver.fit(self._design_matrix(X_train), y_train)
         if self.hp.use_bias:
             self.bias = float(np.asarray(self.W).reshape(-1)[0])
-            self.coef = self.W[1:]
+            self.weights = self.W[1:]
         else:
             self.bias = None
-            self.coef = None
+            self.weights = None
 
     def predict(self, X_new: FloatArrayT) -> FloatArrayT:
         if self.W is None:

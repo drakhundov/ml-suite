@@ -33,7 +33,7 @@ class GDSolver:
                 raise ValueError(
                     "Initial weights' shape does not match training data shape"
                 )
-            W = W_start
+            W = W_start.copy()
         else:
             W = np.zeros((D, 1))
 
