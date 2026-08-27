@@ -52,10 +52,10 @@ class GDSolver:
                 if self.hp.use_bias:
                     l2_reg[0, 0] = 0.0
             W -= lr * (grad + l2_reg)
-            cost = np.sum(
-                (X_train.dot(W) - y_train) ** 2
-            ) / N + self.hp.l2_coef * np.sum(W**2)
             if self.hp.epsilon is not None:
+                cost = np.sum(
+                    (X_train.dot(W) - y_train) ** 2
+                ) / N + self.hp.l2_coef * np.sum(W**2)
                 # Break once error < epsilon.
                 if iterno > 0 and abs(prev_cost - cost) < self.hp.epsilon:
                     break

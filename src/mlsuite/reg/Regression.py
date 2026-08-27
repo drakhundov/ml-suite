@@ -44,14 +44,20 @@ class Regression:
         # Training data is saved for reference.
         self.X_train = X_train
         self.y_train = y_train
+        X_poly = self._design_matrix(X_train)
         if self.hp.normalize_data:
-            mu = X_train.mean(axis=0, keepdims=True)
-            sigma = X_train.std(axis=0, keepdims=True) + 1e-8
-            X_train = (X_train - mu) / sigma
+            mu = X_poly.mean(axis=0, keepdims=True)
+            sigma = X_poly.std(axis=0, keepdims=True) + 1e-8
+            if self.hp.use_bias:
+                # Bias column is constant (all ones) — leave it untouched instead
+                # of collapsing it to zero (mean=1, std=0).
+                mu[0, 0] = 0
+                sigma[0, 0] = 1
+            X_poly = (X_poly - mu) / sigma
             # Save normalization coefficients to apply to test set.
             self.train_mu = mu
             self.train_std = sigma
-        self.W = self.solver.fit(self._design_matrix(X_train), y_train)
+        self.W = self.solver.fit(X_poly, y_train)
         if self.hp.use_bias:
             self.bias = float(np.asarray(self.W).reshape(-1)[0])
             self.weights = self.W[1:]
@@ -64,9 +70,9 @@ class Regression:
             raise ValueError("Must first train the model before predicting")
         elif len(X_new) == 0:
             raise ValueError("Must provide data for prediction")
+        X_new = self._design_matrix(X_new)
         if self.hp.normalize_data:
             X_new = (X_new - self.train_mu) / self.train_std
-        X_new = self._design_matrix(X_new)
         return X_new.dot(self.W)
 
     def _design_matrix(self, X: FloatArrayT) -> FloatArrayT:
