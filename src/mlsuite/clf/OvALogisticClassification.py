@@ -25,7 +25,7 @@ class OvALogisticClassification:
         # X_new -> (N, D)
         #   N — number of data points
         #   D — number of features
-        self.solver._compute_hypothesis(X_new)
+        return self.solver._compute_hypothesis(X_new)
 
     def get_weights_for_class(self, classno: int) -> FloatArrayT:
         w = self._W[classno, :]

@@ -91,11 +91,11 @@ class OvALogisticRegressionSolver:
         return sigmoid_val
 
     def _compute_hypothesis(self, X: FloatArrayT):
-        if self.B is None:
-            self.B = 0
         """
         Computes the value of the hypothesis according to the logistic regression rule.
         Y = sigmoid(W*X + b)
         """
+        if self.B is None:
+            self.B = 0
         Z = X @ self.W + self.B
         return self._calc_matrix_sigmoid(Z)
