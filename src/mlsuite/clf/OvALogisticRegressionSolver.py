@@ -23,6 +23,8 @@ class OvALogisticRegressionSolver:
         # Each class has its own weights, we
         # apply each to data point and use.
         N, D = X_train.shape
+        if N != y_train.size:
+            raise ValueError(f"X_train(shape {X_train.shape}) and y_train(shape {y_train.shape}) don't match")
 
         # Train a separate binary classification model for each class.
         # Put them all into a single matrix for efficiency.
