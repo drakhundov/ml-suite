@@ -5,7 +5,13 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "importlib-resources>=7.1.0",
     "ipykernel>=7.3.0",
+    "kagglehub>=1.0.2",
+    "matplotlib>=3.11.1",
     "numpy>=2.4.6",
+    "pandas>=3.0.5",
     "scikit-learn>=1.9.0",
+    "tensorflow>=2.21.0",
+    "tensorflow-datasets>=4.9.10",
 ]
