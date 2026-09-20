@@ -3,30 +3,34 @@ import numpy as np
 from mlsuite.protocol import FloatArrayT
 from .Conf import LogisticClfConfig
 
+
 class OvALogisticRegressionSolver:
     def __init__(self, conf: LogisticClfConfig):
         self.hp = conf
 
     def fit(self, X_train: FloatArrayT, y_train: FloatArrayT):
-        # ! Assumes class numbers start from 0 and discretely go up.
-        if np.max(y_train) > self.hp.num_classes:
-            raise ValueError(f"OvALogisticRegressionSolver was initialized with a different parameter: self.hp.num_classes={self.hp.num_classes}")
+        # ! Assumes class numbers start from 0 and grow discretely.
+        if np.max(y_train) >= self.hp.num_classes or np.min(y_train) < 0:
+            raise ValueError(
+                f"OvALogisticRegressionSolver was initialized with a different parameter: self.hp.num_classes={self.hp.num_classes}"
+            )
         # Since there are weights for each class, we use
-        # W = (C, D), where
-        #   C - number of classes
+        # W = (D, C), where
         #   D — number of features
-        # X = (D, N)
+        #   C - number of classes
+        # X = (N, D)
         #   N — number of data points
-        X_train = X_train.T
-        D, N = X_train.shape
+        # Each class has its own weights, we
+        # apply each to data point and use.
+        N, D = X_train.shape
 
         # Train a separate binary classification model for each class.
         # Put them all into a single matrix for efficiency.
-        W = np.random.randn(self.hp.num_classes, D) * 0.01
+        W = np.random.randn(D, self.hp.num_classes) * 0.01
         if self.hp.use_bias:
-            B = np.zeros((self.hp.num_classes, 1))
+            B = np.zeros((1, self.hp.num_classes))
         else:
-            B = None
+            B = 0
 
         def _compute_hypothesis():
             nonlocal X_train, W, B
@@ -34,31 +38,28 @@ class OvALogisticRegressionSolver:
             Computes the value of the hypothesis according to the logistic regression rule.
             Y = sigmoid(W*X + b)
             """
-            Z = W @ X_train + B
-            h_theta = self._calc_matrix_sigmoid(Z)
-            return h_theta
+            Z = X_train @ W + B
+            return self._calc_matrix_sigmoid(Z)
 
-        Y = np.zeros((self.hp.num_classes, N))
-        Y[y_train, np.arange(N)] = 1
+        Y = np.zeros((N, self.hp.num_classes))
+        Y[np.arange(N), y_train] = 1
 
         lr = self.hp.lr
         for _ in range(self.hp.niters):
             # Compute hypothesis.
             A = _compute_hypothesis()
             # Calculate error.
-            pure_error = A - Y
+            pure_error = A - Y  # (N, C)
             # For Cross-Entropy, sigmoid function cancels its own derivative.
             # Update the weights and biases accordingly.
-            if self.hp.diminishing_lr:
-                lr *= self.hp.lr_dim_coef
             W = W - lr * (
-                (1 / N) * pure_error @ X_train.T  # Gradient
-                + (self.hp.l2_coef * W)      # L2 Regularization
+                (1 / N) * X_train.T @ pure_error  # Gradient (D, C)
+                + (self.hp.l2_coef * W)  # L2 Regularization
             )
             if self.hp.use_bias:
-                B = B - lr * (1 / N) * np.sum(
-                    pure_error, axis=1, keepdims=True
-                )
+                B = B - lr * (1 / N) * np.sum(pure_error, axis=0, keepdims=True)
+            if self.hp.diminishing_lr:
+                lr *= self.hp.lr_dim_coef
         return W, B
 
     def _calc_matrix_sigmoid(self, Z: FloatArrayT) -> FloatArrayT:

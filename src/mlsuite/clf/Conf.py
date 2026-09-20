@@ -4,5 +4,6 @@ from mlsuite.reg import GDConfig
 
 @dataclass(frozen=True)
 class LogisticClfConfig(GDConfig):
+    # ...GDConfig
     num_classes: int = 2
     use_binary_clf: bool = False
