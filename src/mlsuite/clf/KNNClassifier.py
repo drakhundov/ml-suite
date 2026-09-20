@@ -12,12 +12,13 @@ class KNNClassifier:
 
     def fit(self, X: FloatArrayT, y: FloatArrayT):
         """Lazy learner."""
+        # X -> row vectors (N, D)
         self.X_train = np.array(X)
         self.y_train = np.array(y)
 
     def predict(self, X_new: FloatArrayT) -> FloatArrayT:
-        # X_new -> column vector
-        # self.x_train -> feature matrix
+        # X_new -> row vectors (N, D)
+        # self.X_train -> feature matrix
         dist2 = (
             np.sum(X_new**2, axis=1)[:, np.newaxis]
             + np.sum(self.X_train**2, axis=1)
